@@ -319,32 +319,6 @@ config KSM
 	  See Documentation/vm/ksm.txt for more information: KSM is inactive
 	  until a program has madvised that an area is MADV_MERGEABLE, and
 	  root has set /sys/kernel/mm/ksm/run to 1 (if CONFIG_SYSFS is set).
-choice
-	prompt "Choose UKSM/KSM strategy"
-	default UKSM
-	depends on KSM
-	help
-	  This option allows to select a UKSM/KSM stragety.
-
-config UKSM
-	bool "Ultra-KSM for page merging"
-	depends on KSM
-	help
-	UKSM is inspired by the Linux kernel project \u2014 KSM(Kernel Same
-	page Merging), but with a fundamentally rewritten core algorithm. With
-	an advanced algorithm, UKSM now can transparently scans all anonymously
-	mapped user space applications with an significantly improved scan speed
-	and CPU efficiency. Since KVM is friendly to KSM, KVM can also benefit from
-	UKSM. Now UKSM has its first stable release and first real world enterprise user.
-	For more information, please goto its project page.
-	(www.kerneldedup.org)
-
-config KSM_LEGACY
-	bool "Legacy KSM implementation"
-	depends on KSM
-	help
-	The legacy KSM implementation from Redhat.
-endchoice
 
 config DEFAULT_MMAP_MIN_ADDR
         int "Low address space to protect from user allocation"
@@ -590,6 +564,17 @@ config ZOOM_KILLER
 	help
 	  When OOM select victim, choose process which has largest lowmem
 
+config ACCURATE_FREE_PAGES_CHECK
+	bool "Samsung WA: prevent process overkill"
+		default n
+	help
+		zone_watermark_ok function called for checking zone free page
+		status at page alloc/free. In this function, zone NR_FREE_PAGES
+		state and free_area[o].nr_free is used for determin free space.
+		But, two vaules sometimes imbalance cause by zone state update
+		buffering feature. this patch fix free_pages to actual buddy sysem
+		value.
+
 config OOM_SCAN_WA_PREVENT_WRONG_SEARCH
     bool "Samsung WA: prevent to search the wrong thread"
 	default n
@@ -607,7 +592,7 @@ config SDP_CACHE_CLEANUP
 
 config MIN_DIRTY_THRESH_PAGES
 	int "The lower bound of VM dirty_thresh value in number of pages"
-	default 2560
+	default 7680
 	help
 	  Setting this to certain positive number guaranttees
 	  the VM Dirty-Thresh valus is always larger than that value.
