@@ -140,8 +140,8 @@ BUILD_NOW()
 		./mkboot boot_g900h ../READY/boot.img
 		# Make flashable zip
 		cd ../READY
-		zip -r Kernel-slte.zip * >/dev/null
-		mv Kernel-slte.zip ../../RELEASE/
+		zip -r Kernel-g900h.zip * >/dev/null
+		mv Kernel-g900h.zip ../../RELEASE/
 	else
 		# with red-color
 		echo -e "\e[1;31mKernel STUCK in BUILD! no zImage exist\e[m"
