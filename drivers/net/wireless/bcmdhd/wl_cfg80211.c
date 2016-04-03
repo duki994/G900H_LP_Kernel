@@ -10305,6 +10305,7 @@ static s32 wl_notifier_change_state(struct bcm_cfg80211 *cfg, struct net_info *_
 						WL_DBG(("%s:netdev not ready\n", iter->ndev->name));
 					else
 						WL_ERR(("%s:error (%d)\n", iter->ndev->name, err));
+				} else {
 					wl_cfg80211_update_power_mode(iter->ndev);
 				}
 			}
