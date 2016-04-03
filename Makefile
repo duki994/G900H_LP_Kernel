@@ -384,7 +384,7 @@ KBUILD_CFLAGS := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
  				-Wno-error=unused-parameter -Wno-error=unused-but-set-variable \
  				-fno-exceptions -Wno-multichar -Wno-sequence-point \
 				-fno-delete-null-pointer-checks \
- 				-std=gnu89
+ 				-std=gnu89 -ffast-math -munaligned-access
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
