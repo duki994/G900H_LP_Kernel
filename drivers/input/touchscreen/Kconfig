@@ -897,6 +897,17 @@ config TOUCHSCREEN_MXT540E
 	  To compile this driver as a module, choose M here: the
 	  module will be called mxt540e.
 
+config TOUCHSCREEN_TAP2WAKE
+        tristate "Double tap to wake for touchscreens"
+        select TOUCHSCREEN_PREVENT_SLEEP
+        default y
+
+config TOUCHSCREEN_PREVENT_SLEEP
+        bool "Inihibit sleep on modified touchscreen drivers"
+        default y
+        help
+          This disables the sleep function of modified touchscreen drivers.
+
 source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
 source "drivers/input/touchscreen/cyttsp5/Kconfig"
 source "drivers/input/touchscreen/stm/Kconfig"
