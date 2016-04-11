@@ -241,8 +241,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer -fgcse-las -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -pipe -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -std=gnu89
-HOSTCXXFLAGS = -O3 -fgcse-las -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -pipe -std=gnu89
+HOSTCFLAGS   = -Wmissing-prototypes -DNDEBUG -Wstrict-prototypes -O3 -fomit-frame-pointer -fgcse-las -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -pipe -Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-value -std=gnu89
+HOSTCXXFLAGS = -O3 -fgcse-las -DNDEBUG -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -pipe -std=gnu89
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -392,7 +392,7 @@ KBUILD_CFLAGS   := $(GRAPHITE)  -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -ftree-loop-im -ftree-loop-linear \
 		   -ftree-loop-ivcanon -ftree-vectorize \
 		   -fmodulo-sched -ffast-math \
-		   -fno-delete-null-pointer-checks -std=gnu89
+		   -fno-delete-null-pointer-checks -std=gnu89 -DNDEBUG
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
