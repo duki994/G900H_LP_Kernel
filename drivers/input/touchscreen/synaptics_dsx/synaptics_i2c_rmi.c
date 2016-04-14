@@ -30,8 +30,8 @@
 #include <linux/regulator/consumer.h>
 #include <linux/of.h>
 #include <linux/of_gpio.h>
-#ifdef CONFIG_HAS_EARLYSUSPEND
-#include <linux/earlysuspend.h>
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
 #endif
 #include <linux/sec_batt.h>
 
@@ -56,16 +56,16 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data);
 static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data);
 #endif
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
+#ifdef CONFIG_POWERSUSPEND
 static ssize_t synaptics_rmi4_full_pm_cycle_show(struct device *dev,
 		struct device_attribute *attr, char *buf);
 
 static ssize_t synaptics_rmi4_full_pm_cycle_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count);
 
-static void synaptics_rmi4_early_suspend(struct early_suspend *h);
+static void synaptics_rmi4_power_suspend(struct power_suspend *h);
 
-static void synaptics_rmi4_late_resume(struct early_suspend *h);
+static void synaptics_rmi4_power_resume(struct power_suspend *h);
 
 #else
 
@@ -4044,7 +4044,7 @@ static int synaptics_rmi4_setup_drv_data(struct i2c_client *client)
  * as an input driver, turns on the power to the sensor, queries the
  * sensor for its supported Functions and characteristics, registers
  * the driver to the input subsystem, sets up the interrupt, handles
- * the registration of the early_suspend and late_resume functions,
+ * the registration of the power_suspend and power_resume functions,
  * and creates a work queue for detection of other expansion Function
  * modules.
  */
@@ -4152,11 +4152,11 @@ err_tsp_reboot:
 		goto err_fw_update;
 	}
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-	rmi4_data->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN - 1;
-	rmi4_data->early_suspend.suspend = synaptics_rmi4_early_suspend;
-	rmi4_data->early_suspend.resume = synaptics_rmi4_late_resume;
-	register_early_suspend(&rmi4_data->early_suspend);
+#ifdef CONFIG_POWERSUSPEND
+	/*rmi4_data->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN - 1;*/
+	rmi4_data->power_suspend.suspend = synaptics_rmi4_power_suspend;
+	rmi4_data->power_suspend.resume = synaptics_rmi4_power_resume;
+	register_power_suspend(&rmi4_data->power_suspend);
 #endif
 
 #ifdef SYNAPTICS_RMI_INFORM_CHARGER
@@ -4237,8 +4237,8 @@ static int synaptics_rmi4_remove(struct i2c_client *client)
 	struct synaptics_rmi4_device_info *rmi;
 
 	rmi = &(rmi4_data->rmi4_mod_info);
-#ifdef CONFIG_HAS_EARLYSUSPEND
-	unregister_early_suspend(&rmi4_data->early_suspend);
+#ifdef CONFIG_POWERSUSPEND
+	unregister_power_suspend(&rmi4_data->power_suspend);
 #endif
 	synaptics_rmi4_irq_enable(rmi4_data, false);
 
@@ -4267,7 +4267,7 @@ static int synaptics_rmi4_remove(struct i2c_client *client)
 /**
  * synaptics_rmi4_sensor_sleep()
  *
- * Called by synaptics_rmi4_early_suspend() and synaptics_rmi4_suspend().
+ * Called by synaptics_rmi4_power_suspend() and synaptics_rmi4_suspend().
  *
  * This function stops finger data acquisition and puts the sensor to sleep.
  */
@@ -4516,12 +4516,12 @@ static void synaptics_rmi4_input_close(struct input_dev *dev)
 }
 
 #ifdef CONFIG_PM
-#ifdef CONFIG_HAS_EARLYSUSPEND
+#ifdef CONFIG_POWERSUSPEND
 #define synaptics_rmi4_suspend NULL
 #define synaptics_rmi4_resume NULL
 
 /**
- * synaptics_rmi4_early_suspend()
+ * synaptics_rmi4_power_suspend()
  *
  * Called by the kernel during the early suspend phase when the system
  * enters suspend.
@@ -4529,11 +4529,11 @@ static void synaptics_rmi4_input_close(struct input_dev *dev)
  * This function calls synaptics_rmi4_sensor_sleep() to stop finger
  * data acquisition and put the sensor to sleep.
  */
-static void synaptics_rmi4_early_suspend(struct early_suspend *h)
+static void synaptics_rmi4_power_suspend(struct power_suspend *h)
 {
 	struct synaptics_rmi4_data *rmi4_data =
 			container_of(h, struct synaptics_rmi4_data,
-			early_suspend);
+			power_suspend);
 
 	tsp_debug_dbg(false, &rmi4_data->i2c_client->dev, "%s\n", __func__);
 
@@ -4548,7 +4548,7 @@ static void synaptics_rmi4_early_suspend(struct early_suspend *h)
 }
 
 /**
- * synaptics_rmi4_late_resume()
+ * synaptics_rmi4_power_resume()
  *
  * Called by the kernel during the late resume phase when the system
  * wakes up from suspend.
@@ -4556,12 +4556,12 @@ static void synaptics_rmi4_early_suspend(struct early_suspend *h)
  * This function goes through the sensor wake process if the system wakes
  * up from early suspend (without going into suspend).
  */
-static void synaptics_rmi4_late_resume(struct early_suspend *h)
+static void synaptics_rmi4_power_resume(struct power_suspend *h)
 {
 	int retval = 0;
 	struct synaptics_rmi4_data *rmi4_data =
 		container_of(h, struct synaptics_rmi4_data,
-				early_suspend);
+				power_suspend);
 
 	tsp_debug_dbg(false, &rmi4_data->i2c_client->dev, "%s\n", __func__);
 
