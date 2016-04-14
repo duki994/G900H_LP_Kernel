@@ -34,7 +34,7 @@
 typedef void (*GET_NEXT_FREQ)(struct kbase_device *kbdev, int utilization);
 GET_NEXT_FREQ gpu_dvfs_get_next_freq;
 
-static char *governor_list[G3D_MAX_GOVERNOR_NUM] = {"Default", "Static", "Booster"};
+static char *governor_list[G3D_MAX_GOVERNOR_NUM] = {"Default", "Static", "Booster", "Interactive"};
 #endif /* CONFIG_MALI_T6XX_DVFS */
 
 #define GPU_DVFS_TABLE_SIZE(X)  ARRAY_SIZE(X)
@@ -227,6 +227,54 @@ static int gpu_dvfs_governor_booster(struct kbase_device *kbdev, int utilization
 
 	return 0;
 }
+
+static int gpu_dvfs_governor_interactive(struct kbase_device *kbdev, int utilization)
+{
+	#define highspeed_clock	480
+	#define highspeed_delay	0
+	#define highspeed_load	85
+
+	struct exynos_context *platform;
+	static int highspeed_level;
+	static int delay_count;
+
+
+
+	platform = (struct exynos_context *) kbdev->platform_context;
+	if (!platform)
+		return -ENODEV;
+
+	if ((platform->step > gpu_dvfs_get_level(platform, platform->max_lock))
+			&& (utilization > platform->table[platform->step].max_threshold)) {
+		highspeed_level = gpu_dvfs_get_level(platform, highspeed_clock);
+		if ((highspeed_level > 0) && (utilization > highspeed_load)) {
+			if (delay_count == highspeed_delay) {
+				platform->step = highspeed_level;
+				delay_count = 0;
+			} else {
+				delay_count++;
+			}
+		} else {
+			platform->step--;
+			delay_count = 0;
+		}
+		platform->down_requirement = platform->table[platform->step].stay_count;
+	} else if ((platform->step < gpu_dvfs_get_level(platform, platform->min_lock))
+			&& (utilization < platform->table[platform->step].min_threshold)) {
+		delay_count = 0;
+		platform->down_requirement--;
+		if (platform->down_requirement == 0) {
+			platform->step++;
+			platform->down_requirement = platform->table[platform->step].stay_count;
+		}
+	} else {
+		delay_count = 0;
+		platform->down_requirement = platform->table[platform->step].stay_count;
+	}
+
+	return 0;
+}
+
 #endif /* CONFIG_MALI_T6XX_DVFS */
 
 static int gpu_dvfs_update_asv_table(struct exynos_context *platform, int governor_type)
@@ -293,6 +341,12 @@ int gpu_dvfs_governor_init(struct kbase_device *kbdev, int governor_type)
 		platform->table = gpu_dvfs_infotbl_default;
 		platform->table_size = GPU_DVFS_TABLE_SIZE(gpu_dvfs_infotbl_default);
 		platform->step = gpu_dvfs_get_level(platform, G3D_GOVERNOR_DEFAULT_CLOCK_BOOSTER);
+		break;
+	case G3D_DVFS_GOVERNOR_INTERACTIVE:
+		gpu_dvfs_get_next_freq = (GET_NEXT_FREQ)&gpu_dvfs_governor_interactive;
+		platform->table = gpu_dvfs_infotbl_default;
+		platform->table_size = GPU_DVFS_TABLE_SIZE(gpu_dvfs_infotbl_default);
+		platform->step = gpu_dvfs_get_level(platform, G3D_GOVERNOR_DEFAULT_CLOCK_INTERACTIVE);
 		break;
 	default:
 		GPU_LOG(DVFS_WARNING, "[gpu_dvfs_governor_init] invalid governor type\n");
