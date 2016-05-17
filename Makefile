@@ -380,9 +380,8 @@ KBUILD_CFLAGS   := $(GRAPHITE)  -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security -Wno-sizeof-pointer-memaccess \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves -ffast-math \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
            -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
- 		   -fno-delete-null-pointer-checks \
  		   -ftree-loop-vectorize -ftree-loop-distribute-patterns -ftree-slp-vectorize \
             -fvect-cost-model -ftree-partial-pre \
             -fgcse-lm -fgcse-sm -fsched-spec-load -fsingle-precision-constant
@@ -391,7 +390,6 @@ KBUILD_CFLAGS   := $(GRAPHITE)  -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fweb -frename-registers \
 		   -ftree-loop-im -ftree-loop-linear \
 		   -ftree-loop-ivcanon -ftree-vectorize \
-		   -fmodulo-sched -ffast-math \
 		   -fno-delete-null-pointer-checks -std=gnu11 -DNDEBUG
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
