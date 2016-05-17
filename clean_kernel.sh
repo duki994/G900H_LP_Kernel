@@ -15,7 +15,6 @@ CLEANUP()
 	echo "Initialising................."
 
 	echo "Cleaning READY dir......."
-	sleep 1;
 	rm -rf "$KERNELDIR"/READY/boot
 	rm -rf "$KERNELDIR"/READY/*.img
 	rm -rf "$KERNELDIR"/READY/*.zip
@@ -23,10 +22,8 @@ CLEANUP()
 	rm -f "$KERNELDIR"/.config
 	#### Cleanup bootimg_tools now #####
 	echo "Cleaning bootimg_tools from unneeded data..."
-	sleep 1;
 	echo "Deleting kernel zImage named 'kernel' in bootimg_tools dir....."
 	rm -f "$KERNELDIR"/bootimg_tools/boot_g900h/kernel
-	sleep 1;
 	echo "Deleting all files from ramdisk dir in bootimg_tools if it exists"
 	if [ ! -d "$KERNELDIR"/bootimg_tools/boot_g900h/ramdisk ]; then
 		mkdir -p "$KERNELDIR"/bootimg_tools/boot_g900h/ramdisk 
@@ -34,7 +31,6 @@ CLEANUP()
 	else
 		rm -rf "$KERNELDIR"/bootimg_tools/boot_g900h/ramdisk/*
 	fi;
-	sleep 1;
 	echo "Deleted all files from ramdisk dir in bootimg_tools";
 
 	
@@ -68,10 +64,13 @@ CLEANUP;
 
 CLEAN_KERNEL()
 {
-	echo "Mrproper and clean running"
-	sleep 1;
+	echo "Mrproper and clean running";
 	make ARCH=arm mrproper;
 	make clean;
+
+	# clean remaining .o files if needed
+	shopt -s globstar; # enable globstar in bash
+	rm **/*.o;
 
 	# clean ccache
 	read -t 10 -p "clean ccache, 10sec timeout (y/n)?";
